@@ -2,20 +2,21 @@ package com.example.atividade1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener{
 
-    private int actualFontSize = 0;
-    private String actualText = "";
-    private int actualColor = R.color.black;
+    private int fontSize = 0;
+    private String text = "";
 
     private boolean isBold = false;
     private boolean isItalic = false;
@@ -26,10 +27,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView textView5;
     private Button btnSendText;
     private SeekBar seekBar;
-
-    private CheckBox checkBox;
-    private CheckBox checkBox2;
-    private CheckBox checkBox3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +39,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textView5 = findViewById(R.id.textView5);
         seekBar = findViewById(R.id.seekBar);
 
-        checkBox = findViewById(R.id.checkBox);
-        checkBox2 = findViewById(R.id.checkBox2);
-        checkBox3 = findViewById(R.id.checkBox3);
-
         btnSendText.setOnClickListener(this);
         seekBar.setOnSeekBarChangeListener(this);
     }
@@ -53,20 +46,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.imageButton) {
-
-            actualText = editText.getText().toString();
+            text = editText.getText().toString();
             textView.setText(editText.getText().toString());
-
         }
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (seekBar.getId() == R.id.seekBar) {
-            actualFontSize = progress;
-            textView.setTextSize(actualFontSize);
-
-            textView5.setText(Integer.toString(actualFontSize) + "sp");
+            fontSize = progress;
+            textView.setTextSize(fontSize);
+            textView5.setText(Integer.toString(fontSize) + "sp");
         }
     }
 
@@ -80,11 +70,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-
     public void onCheckboxClicked(View view) {
         boolean checked = ((CheckBox) view).isChecked();
 
-        // Check which checkbox was clicked
         switch(view.getId()) {
             case R.id.checkBox:
                 isBold = checked;
@@ -94,15 +82,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.checkBox3:
                 if (checked) {
-                    actualText = actualText.toUpperCase();
+                    text = text.toUpperCase();
                 } else {
-                    actualText = actualText.toLowerCase();
+                    text = text.toLowerCase();
                 }
 
-                textView.setText(actualText);
+                textView.setText(text);
                 break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + view.getId());
         }
 
         if (isBold && !isItalic) {
@@ -116,6 +102,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         else {
             textView.setTypeface(null, Typeface.ITALIC);
+        }
+    }
+
+    public void onRadioButtonClicked(View view) {
+        boolean checked = ((RadioButton) view).isChecked();
+
+        switch(view.getId()) {
+            case R.id.radioButton:
+                if (checked)
+                    textView.setTextColor(Color.RED);
+                    break;
+            case R.id.radioButton2:
+                if (checked)
+                    textView.setTextColor(Color.GREEN);
+                    break;
+            case R.id.radioButton3:
+                if (checked)
+                    textView.setTextColor(Color.BLUE);
+                break;
         }
     }
 }
