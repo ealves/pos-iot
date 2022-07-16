@@ -17,25 +17,18 @@ public class MyDialog extends DialogFragment implements DialogInterface.OnClickL
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.app_name)
-                .setMessage(R.string.sair)
-                .setPositiveButton(R.string.sim, this)
-                .setNegativeButton(R.string.nao, this);
+        builder.setTitle(R.string.item)
+                .setPositiveButton(R.string.ok, this)
+                .setNegativeButton(R.string.cancel, this);
         return builder.create();
     }
-
 
     @Override
     public void onClick(DialogInterface dialogInterface, int i) {
         if (i == DialogInterface.BUTTON_POSITIVE){
-            Toast.makeText(getActivity(), R.string.thanks, Toast.LENGTH_SHORT).show();
-            //listener.onExit();
-        }
-        else if (i == DialogInterface.BUTTON_NEGATIVE){
-            Toast.makeText(getActivity(), R.string.thanks, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.added, Toast.LENGTH_SHORT).show();
         }
     }
-
 
     @Override
     public void onAttach(Context context) {

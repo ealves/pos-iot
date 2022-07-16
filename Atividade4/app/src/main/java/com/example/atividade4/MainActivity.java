@@ -1,9 +1,7 @@
 package com.example.atividade4;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ActionMode;
@@ -11,14 +9,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AbsListView.MultiChoiceModeListener, AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements AbsListView.MultiChoiceModeListener {
 
     private List<String> selected = new ArrayList<>();
     private ArrayAdapter<String> arrayAdapter;
@@ -40,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements AbsListView.Multi
         listView.setAdapter(arrayAdapter);
 
         listView.setMultiChoiceModeListener(this);
-        listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+        listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
     }
 
     @Override
@@ -106,10 +102,5 @@ public class MainActivity extends AppCompatActivity implements AbsListView.Multi
             view.setBackgroundColor(Color.TRANSPARENT);
             selected.remove(s);
         }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
     }
 }

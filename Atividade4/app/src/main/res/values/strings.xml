@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">Atividade 4</string>
+    <string name="item">Item</string>
     <string name="action_add">Adicionar</string>
     <string name="action_delete">Excluir</string>
-    <string name="sair">Sair</string>
-    <string name="sim">Sim</string>
-    <string name="nao">Não</string>
-    <string name="thanks">Obrigado</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancelar</string>
+    <string name="added">Adicionado</string>
 </resources>
