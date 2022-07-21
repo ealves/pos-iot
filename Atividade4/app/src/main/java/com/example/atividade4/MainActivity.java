@@ -1,7 +1,10 @@
 package com.example.atividade4;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ActionMode;
@@ -14,10 +17,10 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements AbsListView.MultiChoiceModeListener {
+public class MainActivity extends AppCompatActivity implements AbsListView.MultiChoiceModeListener, MyDialog.OnAddListener{
 
     private List<String> selected = new ArrayList<>();
-    private ArrayAdapter<String> arrayAdapter;
+    private ListViewAdapter listViewAdapter;
     private ListView listView;
 
     @Override
@@ -27,17 +30,29 @@ public class MainActivity extends AppCompatActivity implements AbsListView.Multi
 
         listView = findViewById(R.id.listView);
 
-        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+        listViewAdapter = new ListViewAdapter(this);
 
-        //listItems = new ArrayList<>();
-        arrayAdapter.add("Teste");
-        arrayAdapter.add("Teste 2");
-
-        listView.setAdapter(arrayAdapter);
+        listView.setAdapter(listViewAdapter);
 
         listView.setMultiChoiceModeListener(this);
         listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
+
+        listViewAdapter.addItem("Teste 1");
+        listViewAdapter.addItem("Teste 2");
     }
+
+    /*@Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_EDIT && resultCode == RESULT_OK) {
+            updateList();
+        }
+    }
+
+    private void updateList() {
+        List<String> items = listViewAdapter.getItems();
+        listViewAdapter.setItems(items);
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -68,13 +83,13 @@ public class MainActivity extends AppCompatActivity implements AbsListView.Multi
 
     @Override
     public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-        if (menuItem.getItemId() == R.id.action_delete){
+        /*if (menuItem.getItemId() == R.id.action_delete){
             for(String s: selected){
                 arrayAdapter.remove(s);
             }
             actionMode.finish();
             return true;
-        }
+        }*/
         return false;
     }
 
@@ -91,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements AbsListView.Multi
 
     @Override
     public void onItemCheckedStateChanged(ActionMode actionMode, int i, long l, boolean b) {
-        String s = arrayAdapter.getItem(i);
+        /*String s = arrayAdapter.getItem(i);
         View view = listView.getChildAt(i);
 
         if(b){
@@ -101,6 +116,11 @@ public class MainActivity extends AppCompatActivity implements AbsListView.Multi
         else{
             view.setBackgroundColor(Color.TRANSPARENT);
             selected.remove(s);
-        }
+        }*/
+    }
+
+    @Override
+    public void onAdd(String item) {
+        listViewAdapter.addItem(item);
     }
 }
