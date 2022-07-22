@@ -5,6 +5,7 @@ import android.view.ActionMode;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,6 +17,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ListViewAdapter listViewAdapter;
     private ListView listView;
     ActionMode mActionModeCallback = null;
+    Integer itemSelected = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,12 +53,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_delete:
+                    listViewAdapter.removeItem(itemSelected);
+                    mode.finish();
+                    return true;
+                case R.id.action_edit:
+                    MyDialog dialog = new MyDialog();
+                    dialog.show(getSupportFragmentManager(), "dialog");
+                    return true;
+            }
             return false;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-
+            View view = listView.getChildAt(itemSelected);
+            view.setBackgroundColor(Color.TRANSPARENT);
+            itemSelected = -1;
         }
     };
 
@@ -96,16 +110,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        if (mActionModeCallback == null) {
+        if (itemSelected == -1) {
+
+            itemSelected = position;
 
             mActionModeCallback = startActionMode(ContextualActionModeCallback);
+
+            view = listView.getChildAt(position);
+
+            view.setBackgroundColor(Color.GRAY);
+
+            //Toast.makeText(MainActivity.this, "Teste", Toast.LENGTH_SHORT).show();
+
+        } else {
+            Toast.makeText(MainActivity.this, "Selecione somente um item", Toast.LENGTH_SHORT).show();
         }
-
-        view = listView.getChildAt(position);
-
-        view.setBackgroundColor(Color.GRAY);
-
-        Toast.makeText(MainActivity.this, "Teste", Toast.LENGTH_SHORT).show();
     }
 
     /*@Override
