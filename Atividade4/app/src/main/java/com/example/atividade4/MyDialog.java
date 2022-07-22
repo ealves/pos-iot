@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,7 +16,7 @@ import androidx.fragment.app.DialogFragment;
 public class MyDialog extends DialogFragment implements DialogInterface.OnClickListener {
 
     private EditText editText;
-    private OnAddListener listener;
+    private OnSaveListener listener;
 
     @NonNull
     @Override
@@ -34,6 +33,8 @@ public class MyDialog extends DialogFragment implements DialogInterface.OnClickL
 
         editText = layout.findViewById(R.id.itemEditText);
 
+        editText.setText(getArguments().getString("text"));
+
         builder.setPositiveButton(R.string.ok, this);
         builder.setNegativeButton(R.string.cancel, this);
 
@@ -45,8 +46,7 @@ public class MyDialog extends DialogFragment implements DialogInterface.OnClickL
         if (i == DialogInterface.BUTTON_POSITIVE) {
 
             String item = editText.getText().toString();
-            listener.onAdd(item);
-            Toast.makeText(getActivity(), item, Toast.LENGTH_SHORT).show();
+            listener.onSave(item);
         }
     }
 
@@ -54,14 +54,14 @@ public class MyDialog extends DialogFragment implements DialogInterface.OnClickL
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        if (!(context instanceof OnAddListener)) {
+        if (!(context instanceof OnSaveListener)) {
             throw new RuntimeException("A activity deve implementar DialogFragment.OnAddListener");
         }
 
-        this.listener = (OnAddListener) context;
+        this.listener = (OnSaveListener) context;
     }
 
-    public interface OnAddListener {
-        public void onAdd(String item);
+    public interface OnSaveListener {
+        public void onSave(String item);
     }
 }

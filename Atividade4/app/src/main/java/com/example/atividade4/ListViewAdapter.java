@@ -4,10 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -52,6 +49,11 @@ public class ListViewAdapter extends BaseAdapter {
 
     public void addItem(String item) {
         items.add(item);
+        notifyDataSetChanged();
+    }
+
+    public void editItem(String item, int i) {
+        items.set(i, item);
         notifyDataSetChanged();
     }
 

@@ -5,19 +5,19 @@ import android.view.ActionMode;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, MyDialog.OnAddListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, MyDialog.OnSaveListener {
 
     private ListViewAdapter listViewAdapter;
     private ListView listView;
     ActionMode mActionModeCallback = null;
     Integer itemSelected = -1;
+    Boolean isEditing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,12 +31,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         listView.setAdapter(listViewAdapter);
 
         listView.setOnItemClickListener(this);
-        //listView.setOnItemLongClickListener(this);
-        //listView.setMultiChoiceModeListener(mActionModeCallback);
-        //listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
 
-        listViewAdapter.addItem("Teste 1");
-        listViewAdapter.addItem("Teste 2");
+        //listViewAdapter.addItem("Teste 1");
+        //listViewAdapter.addItem("Teste 2");
     }
 
     ActionMode.Callback ContextualActionModeCallback = new ActionMode.Callback() {
@@ -59,8 +56,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     mode.finish();
                     return true;
                 case R.id.action_edit:
+                    isEditing = true;
                     MyDialog dialog = new MyDialog();
+                    Bundle args = new Bundle();
+                    String itemText = listViewAdapter.getItem(itemSelected);
+                    args.putString("text", itemText);
+                    dialog.setArguments(args);
                     dialog.show(getSupportFragmentManager(), "dialog");
+                    mode.finish();
                     return true;
             }
             return false;
@@ -70,7 +73,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         public void onDestroyActionMode(ActionMode mode) {
             View view = listView.getChildAt(itemSelected);
             view.setBackgroundColor(Color.TRANSPARENT);
-            itemSelected = -1;
+
+            if (!isEditing) itemSelected = -1;
         }
     };
 
@@ -78,6 +82,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public boolean onOptionsItemSelected(@NonNull MenuItem menuItem) {
         if (menuItem.getItemId() == R.id.action_add) {
             MyDialog dialog = new MyDialog();
+            Bundle args = new Bundle();
+            args.putString("text", "");
+            dialog.setArguments(args);
             dialog.show(getSupportFragmentManager(), "dialog");
             return true;
         }
@@ -91,20 +98,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return super.onCreateOptionsMenu(menu);
     }
 
-    /*@Override
-    public void onDestroyActionMode(ActionMode mode) {
-        int count = listView.getChildCount();
-
-        for(int i=0; i<count; i++){
-            View view = listView.getChildAt(i);
-            view.setBackgroundColor(Color.TRANSPARENT);
-        }
-        selected.clear();
-    }*/
-
     @Override
-    public void onAdd(String item) {
-        listViewAdapter.addItem(item);
+    public void onSave(String item) {
+
+        if (itemSelected != -1) {
+            listViewAdapter.editItem(item, itemSelected);
+            itemSelected = -1;
+            isEditing = false;
+        } else {
+            listViewAdapter.addItem(item);
+        }
     }
 
     @Override
@@ -120,89 +123,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             view.setBackgroundColor(Color.GRAY);
 
-            //Toast.makeText(MainActivity.this, "Teste", Toast.LENGTH_SHORT).show();
-
         } else {
             Toast.makeText(MainActivity.this, "Selecione somente um item", Toast.LENGTH_SHORT).show();
         }
     }
-
-    /*@Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        getMenuInflater().inflate(R.menu.actions_delete, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        if (item.getItemId() == R.id.action_delete){
-            /*for(Integer index: selected){
-                listViewAdapter.removeItem(index);
-            }
-            mode.finish();
-            return true;
-        }
-
-        if (item.getItemId() == R.id.action_edit) {
-            MyDialog dialog = new MyDialog();
-            dialog.show(getSupportFragmentManager(), "dialog");
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-
-    }
-
-    @Override
-    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-
-        View view = listView.getChildAt(position);
-
-        if(checked){
-            view.setBackgroundColor(Color.GRAY);
-        }
-        else{
-            view.setBackgroundColor(Color.TRANSPARENT);
-        }
-    }*/
-
-    /*@Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-        view = listView.getChildAt(position);
-
-        int index = selected.indexOf(position);
-
-        if (index == -1) {
-
-            selected.add(position);
-            view.setBackgroundColor(Color.BLUE);
-        } else {
-            view.setBackgroundColor(Color.TRANSPARENT);
-            selected.remove(position);
-        }
-
-        Toast.makeText(this, position, Toast.LENGTH_SHORT).show();
-        /*View view = listView.getChildAt(i);
-
-        if(b){
-            view.setBackgroundColor(Color.BLUE);
-            selected.add(i);
-        }
-        else{
-            view.setBackgroundColor(Color.TRANSPARENT);
-            selected.remove(i);
-        }*/
-
-        //return false;
-    //}
 }
