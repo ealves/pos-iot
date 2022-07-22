@@ -55,7 +55,7 @@ public class MyDialog extends DialogFragment implements DialogInterface.OnClickL
         super.onAttach(context);
 
         if (!(context instanceof OnAddListener)) {
-            throw new RuntimeException("A activity deve implementar DialogFragment.OnDeleteListener");
+            throw new RuntimeException("A activity deve implementar DialogFragment.OnAddListener");
         }
 
         this.listener = (OnAddListener) context;
