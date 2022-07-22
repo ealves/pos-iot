@@ -1,26 +1,21 @@
 package com.example.atividade4;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import android.view.ActionMode;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.ActionMode;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, MyDialog.OnAddListener {
 
-public class MainActivity extends AppCompatActivity implements MyDialog.OnAddListener {
-
-    private List<Integer> selected = new ArrayList<Integer>();
     private ListViewAdapter listViewAdapter;
     private ListView listView;
+    ActionMode mActionModeCallback = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,25 +28,19 @@ public class MainActivity extends AppCompatActivity implements MyDialog.OnAddLis
 
         listView.setAdapter(listViewAdapter);
 
-        //listView.setOnItemClickListener(this);
+        listView.setOnItemClickListener(this);
         //listView.setOnItemLongClickListener(this);
-        listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
-        listView.setMultiChoiceModeListener(modeListener);
+        //listView.setMultiChoiceModeListener(mActionModeCallback);
+        //listView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
 
         listViewAdapter.addItem("Teste 1");
         listViewAdapter.addItem("Teste 2");
     }
 
-    AbsListView.MultiChoiceModeListener modeListener = new AbsListView.MultiChoiceModeListener() {
-        @Override
-        public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-
-        }
-
+    ActionMode.Callback ContextualActionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            MenuInflater menuInflater = mode.getMenuInflater();
-            menuInflater.inflate(R.menu.actions_delete, menu);
+            getMenuInflater().inflate(R.menu.actions_delete, menu);
             return true;
         }
 
@@ -89,36 +78,6 @@ public class MainActivity extends AppCompatActivity implements MyDialog.OnAddLis
     }
 
     /*@Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        getMenuInflater().inflate(R.menu.actions_delete, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
-
-    @Override
-    public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-        if (menuItem.getItemId() == R.id.action_delete){
-            for(Integer index: selected){
-                listViewAdapter.removeItem(index);
-            }
-            actionMode.finish();
-            return true;
-        }
-
-        if (menuItem.getItemId() == R.id.action_edit) {
-            MyDialog dialog = new MyDialog();
-            dialog.show(getSupportFragmentManager(), "dialog");
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     public void onDestroyActionMode(ActionMode mode) {
         int count = listView.getChildCount();
 
@@ -134,8 +93,13 @@ public class MainActivity extends AppCompatActivity implements MyDialog.OnAddLis
         listViewAdapter.addItem(item);
     }
 
-    /*@Override
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        if (mActionModeCallback == null) {
+
+            mActionModeCallback = startActionMode(ContextualActionModeCallback);
+        }
 
         view = listView.getChildAt(position);
 
@@ -143,6 +107,54 @@ public class MainActivity extends AppCompatActivity implements MyDialog.OnAddLis
 
         Toast.makeText(MainActivity.this, "Teste", Toast.LENGTH_SHORT).show();
     }
+
+    /*@Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        getMenuInflater().inflate(R.menu.actions_delete, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        if (item.getItemId() == R.id.action_delete){
+            /*for(Integer index: selected){
+                listViewAdapter.removeItem(index);
+            }
+            mode.finish();
+            return true;
+        }
+
+        if (item.getItemId() == R.id.action_edit) {
+            MyDialog dialog = new MyDialog();
+            dialog.show(getSupportFragmentManager(), "dialog");
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+
+    }
+
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+
+        View view = listView.getChildAt(position);
+
+        if(checked){
+            view.setBackgroundColor(Color.GRAY);
+        }
+        else{
+            view.setBackgroundColor(Color.TRANSPARENT);
+        }
+    }*/
 
     /*@Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -174,9 +186,4 @@ public class MainActivity extends AppCompatActivity implements MyDialog.OnAddLis
 
         //return false;
     //}
-
-    /*@Override
-    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-
-    }*/
 }
