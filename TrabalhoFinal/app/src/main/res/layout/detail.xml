@@ -48,9 +48,9 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
+        android:text="Este aplicativo é o trabalho final da disciplina de Desenvolvimento de Aplicações Móveis"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3"
-        tools:text="Este aplicativo é o trabalho final da disciplina de Desenvolvimento de Aplicações Móveis" />
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

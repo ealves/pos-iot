@@ -91,10 +91,4 @@ class MyDatabaseHelper extends SQLiteOpenHelper {
             Toast.makeText(context, "Excluído com sucesso!", Toast.LENGTH_SHORT).show();
         }
     }
-
-    void deleteAllData(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM " + TABLE_NAME);
-    }
-
 }
