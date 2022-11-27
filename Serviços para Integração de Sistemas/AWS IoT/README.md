@@ -9,6 +9,7 @@ SELECT * FROM 'esp8266/pub'
 Para a regra de disparo de e-mail foi utilizada a seguinte instrução SQL:
 SELECT temperature FROM 'esp8266/pub' WHERE temperature > 30
 
+Ainda sobre o teste de notificação por e-mail foi utilizado o serviço Mailinator.
 Todo o passo a passo foi registrado e enumerado com a descrição reverente a cada etapa da atividade.
 
 O arquivo secrets.h não foi versionado.
