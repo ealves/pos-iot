@@ -2,6 +2,7 @@ using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -29,28 +30,54 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/measurements", () =>
+app.MapGet("/measurements", async (IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
-    Measurement2 sensor = new(1, 30, 60, DateTimeOffset.Now);
-
-    List<Measurement2> measurements = new()
+    ScanRequest scanRequest = new ()
     {
-        sensor
+        TableName = databaseSettings.Value.TableName
     };
+
+    var response = await dynamoDb.ScanAsync(scanRequest);
+
+    if (response.Items.Count == 0)
+    {
+        return null;
+    }
+   
+    List<MeasurementDTO> measurements = new ();
+
+    foreach (var item in response.Items)
+    {
+        var itemAsDocument = Document.FromAttributeMap(item);
+        var measurement = JsonSerializer.Deserialize<Measurement>(itemAsDocument.ToJson());
+
+        if (measurement != null)
+        {
+            measurements.Add(new MeasurementDTO(measurement.Id, measurement.Temperature, measurement.Humidity, measurement.DateTimeOffset));
+        }
+    }
 
     return measurements;
 })
 .WithName("GetTemperatures");
 
-app.MapPost("/measurement", async (MeasurementDTO measurement, IAmazonDynamoDB dynamoDb) =>
+app.MapPost("/measurement", async (MeasurementDTO measurementDTO, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
+    Measurement measurement = new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Temperature = measurementDTO.Temperature,
+        Humidity = measurementDTO.Humidity,
+        DateTimeOffset = measurementDTO.DateTimeOffset,
+    };
+
     var measurementAsJson = JsonSerializer.Serialize(measurement);
     var itemAsDocument = Document.FromJson(measurementAsJson);
     var itemAsAttributes = itemAsDocument.ToAttributeMap();
 
     var createItemRequest = new PutItemRequest
     {
-        TableName = "measurements",
+        TableName = databaseSettings.Value.TableName,
         Item = itemAsAttributes
     };
 
@@ -61,11 +88,11 @@ app.MapPost("/measurement", async (MeasurementDTO measurement, IAmazonDynamoDB d
 
 app.Run();
 
-internal record Measurement2(int Id, double Temperature, double Humidity, DateTimeOffset DateTimeOffset)
+internal record MeasurementDTO(string Id, double Temperature, double Humidity, DateTimeOffset DateTimeOffset)
 {
 }
 
-public class MeasurementDTO
+public class Measurement
 {
     [JsonPropertyName("pk")]
     public string Pk => Id;
