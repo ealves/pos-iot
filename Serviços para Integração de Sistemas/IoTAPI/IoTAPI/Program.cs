@@ -3,6 +3,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,8 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 var config = builder.Configuration;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -21,7 +20,6 @@ builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(Reg
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -30,12 +28,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/measurements", async (IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
+app.MapGet("/measurements", async(int? limit, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
-    ScanRequest scanRequest = new ()
+    ScanRequest scanRequest = new()
     {
-        TableName = databaseSettings.Value.TableName
+        TableName = databaseSettings.Value.TableName,
     };
+
+    if (limit != null)
+        scanRequest.Limit = (int)limit;
 
     var response = await dynamoDb.ScanAsync(scanRequest);
 
@@ -53,7 +54,12 @@ app.MapGet("/measurements", async (IAmazonDynamoDB dynamoDb, IOptions<DatabaseSe
 
         if (measurement != null)
         {
-            measurements.Add(new MeasurementDTO(measurement.Id, measurement.Temperature, measurement.Humidity, measurement.DateTimeOffset));
+            measurements.Add(new MeasurementDTO()
+            {
+                Id = Guid.Parse(measurement.Id),
+                Temperature = measurement.Temperature,
+                DateTimeOffset = measurement.DateTimeOffset
+            });
         }
     }
 
@@ -63,33 +69,97 @@ app.MapGet("/measurements", async (IAmazonDynamoDB dynamoDb, IOptions<DatabaseSe
 
 app.MapPost("/measurement", async (MeasurementDTO measurementDTO, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
-    Measurement measurement = new()
+    if (measurementDTO.Temperature != null && measurementDTO.DateTimeOffset != null)
     {
-        Id = Guid.NewGuid().ToString(),
-        Temperature = measurementDTO.Temperature,
-        Humidity = measurementDTO.Humidity,
-        DateTimeOffset = measurementDTO.DateTimeOffset,
-    };
+        Measurement measurement = new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Temperature = (double)measurementDTO.Temperature,
+            DateTimeOffset = (DateTimeOffset)measurementDTO.DateTimeOffset,
+        };
 
-    var measurementAsJson = JsonSerializer.Serialize(measurement);
-    var itemAsDocument = Document.FromJson(measurementAsJson);
-    var itemAsAttributes = itemAsDocument.ToAttributeMap();
+        var measurementAsJson = JsonSerializer.Serialize(measurement);
+        var itemAsDocument = Document.FromJson(measurementAsJson);
+        var itemAsAttributes = itemAsDocument.ToAttributeMap();
 
-    var createItemRequest = new PutItemRequest
+        var createItemRequest = new PutItemRequest
+        {
+            TableName = databaseSettings.Value.TableName,
+            Item = itemAsAttributes
+        };
+
+        var response = await dynamoDb.PutItemAsync(createItemRequest);
+
+        if (response.HttpStatusCode == HttpStatusCode.OK)
+        {
+            return Results.Created("/measurements", null);
+        }
+        else
+        {
+            return Results.BadRequest("Erro ao cadastrar medição");
+        }
+    }
+    else
     {
-        TableName = databaseSettings.Value.TableName,
-        Item = itemAsAttributes
-    };
-
-    var response = await dynamoDb.PutItemAsync(createItemRequest);
-    return response.HttpStatusCode == HttpStatusCode.OK;
+        return Results.BadRequest("Valores inválidos");
+    }
 })
 .WithName("CreateMeasurement");
 
+app.MapDelete("/measurements/{id}", async (Guid id, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
+{
+    var getItemRequest = new GetItemRequest
+    {
+        TableName = databaseSettings.Value.TableName,
+        Key = new Dictionary<string, AttributeValue>
+        {
+            { "pk", new AttributeValue { S = id.ToString() } },
+            { "sk", new AttributeValue { S = id.ToString() } }
+        }
+    };
+
+    var response = await dynamoDb.GetItemAsync(getItemRequest);
+
+    if (response.Item.Count == 0)
+    {
+        return Results.BadRequest("Medição não encontrada");
+    }
+    else
+    {
+        var deleteItemRequest = new DeleteItemRequest
+        {
+            TableName = databaseSettings.Value.TableName,
+            Key = new Dictionary<string, AttributeValue>
+            {
+                { "pk", new AttributeValue { S = id.ToString() } },
+                { "sk", new AttributeValue { S = id.ToString() } }
+            }
+        };
+
+        var deleteResponse = await dynamoDb.DeleteItemAsync(deleteItemRequest);
+
+        if (deleteResponse.HttpStatusCode == HttpStatusCode.OK)
+        {
+            return Results.Ok();
+        }
+        else
+        {
+            return Results.BadRequest("Erro ao remover medição");
+        }
+    }
+}).WithName("Delete");
+
 app.Run();
 
-internal record MeasurementDTO(string Id, double Temperature, double Humidity, DateTimeOffset DateTimeOffset)
+public class MeasurementDTO
 {
+    public Guid Id { get; set; }
+
+    [Required]
+    public double? Temperature { get; set; }
+
+    [Required]
+    public DateTimeOffset? DateTimeOffset { get; set; }
 }
 
 public class Measurement
@@ -105,9 +175,6 @@ public class Measurement
 
     [JsonPropertyName("temperature")]
     public double Temperature { get; init; } = default!;
-
-    [JsonPropertyName("humidity")]
-    public double Humidity { get; init; } = default!;
 
     [JsonPropertyName("dateTimeOffset")]
     public DateTimeOffset DateTimeOffset { get; init; }
