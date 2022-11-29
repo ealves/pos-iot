@@ -28,7 +28,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/measurements", async(int? limit, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
+app.MapGet("/temperaturas", async(int? limit, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
     ScanRequest scanRequest = new()
     {
@@ -67,7 +67,7 @@ app.MapGet("/measurements", async(int? limit, IAmazonDynamoDB dynamoDb, IOptions
 })
 .WithName("GetTemperatures");
 
-app.MapPost("/measurement", async (MeasurementDTO measurementDTO, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
+app.MapPost("/temperatura", async (MeasurementDTO measurementDTO, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
     if (measurementDTO.Temperature != null && measurementDTO.DateTimeOffset != null)
     {
@@ -106,7 +106,7 @@ app.MapPost("/measurement", async (MeasurementDTO measurementDTO, IAmazonDynamoD
 })
 .WithName("CreateMeasurement");
 
-app.MapDelete("/measurements/{id}", async (Guid id, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
+app.MapDelete("/temperaturas/{id}", async (Guid id, IAmazonDynamoDB dynamoDb, IOptions<DatabaseSettings> databaseSettings) =>
 {
     var getItemRequest = new GetItemRequest
     {
